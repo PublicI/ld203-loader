@@ -1,0 +1,30 @@
+{
+  "name": "lobbying_disclosure",
+  "version": "1.0.0",
+  "description": "Fetch and parse LD203 Filings.",
+  "main": "senate.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Pratheek Rebala <pratheekrebala@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.17.1",
+    "cache-service-redis": "^1.2.3",
+    "cheerio": "^1.0.0-rc.2",
+    "cheerio-tableparser": "^1.0.1",
+    "fs-extra": "^5.0.0",
+    "html-to-xlsx": "^0.6.8",
+    "node-table-to-csv": "^0.1.0",
+    "papaparse": "^4.3.6",
+    "x-ray": "git+https://github.com/matthewmueller/x-ray.git",
+    "x-ray-http-cache": "^2.0.0",
+    "xml2js": "^0.4.19",
+    "xml2json-command": "0.0.3",
+    "yargs": "^10.0.3"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-decompress": "^2.0.1"
+  }
+}

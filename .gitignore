@@ -1,0 +1,7 @@
+cache_data/
+node_modules/
+extracted/
+downloads/
+parsed/
+dist/
+.DS_Store
