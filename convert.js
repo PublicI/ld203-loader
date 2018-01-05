@@ -31,7 +31,7 @@ async function mapFilingMeta(filing) {
     Object.keys(filing).filter(d => !['Contributions','xmlns'].includes(d)).forEach(d => {
         if (typeof filing[d] != 'string') {
             Object.keys(filing[d]).forEach(key => {
-                if(key != 'xmlns') filingMeta[`${d}${key.replace(d, '')}`] = filing[d][key]
+                if(key != 'xmlns') filingMeta[`${d}${key.replace(d, '')}`] = filing[d][key].replace(/(\r\n|\n|\r)/gm," ");
             })
         }
         else {
@@ -71,12 +71,18 @@ async function main(){
     let parsedFilingMeta = await Promise.all(parsedXML.Filing.map(k => mapFilingMeta(k)))
     let parsedFilingContributions = await Promise.all(parsedXML.Filing.map(k => mapFilingContributions(k)))
 
-    let filingMetaCSV = Papa.unparse([].concat.apply([], parsedFilingMeta));
+    let filingMetaCSV = Papa.unparse([].concat.apply([], parsedFilingMeta), {
+        newline: '\n',
+        quotes: true
+    });
+    
     let filingContributionsCSV = Papa.unparse([].concat.apply([], parsedFilingContributions));
 
     fs.writeFileSync(`${folderToWrite}/${outputPrefix}_meta.csv`, filingMetaCSV)
     fs.writeFileSync(`${folderToWrite}/${outputPrefix}_contributions.csv`, filingContributionsCSV)
-    fs.writeFileSync(`${folderToWrite}/${outputPrefix}.json`, JSON.stringify(parsedFilingMeta))
+    
+    fs.writeFileSync(`${folderToWrite}/${outputPrefix}_contributions.json`, parsedFilingMeta.map(d => JSON.stringify(d)).join('\n') + '\n')
+    fs.writeFileSync(`${folderToWrite}/${outputPrefix}_meta.json`, parsedFilingMeta.map(d => JSON.stringify(d)).join('\n') + '\n')
 }
 
 main()
