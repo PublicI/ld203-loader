@@ -5,6 +5,7 @@ This script imports the LD-203 bulk downloads from the U.S. Senate [available he
 ## How it works
 
 Run `process.sh` to generate the bulk CSVs in the `dist/` folder.
+
 Run `run_sql.sh` to import said CSVs into the database. Update the connection string here to connect to a different database. It will prompt you for your password before finishing.
 
 ## Notes:
