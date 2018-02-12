@@ -10,6 +10,7 @@ const senate_url = 'https://www.senate.gov/legislative/Public_Disclosure/contrib
 const stateLocation = module.stateLocation || './state.json';
 const downloadDir =  module.downloadDir || './downloads';
 const extractDir = module.extractDir || './extracted';
+
 let prevState = fs.readJsonSync(stateLocation)
 
 const x = Xray({
@@ -72,6 +73,49 @@ function download(file){
     })
 }
 
+
+
+async function mapFilingMeta(filing, source_file) {
+    let filingMeta = {};
+    Object.keys(filing).filter(d => !['Contributions','xmlns'].includes(d)).forEach(d => {
+        if (typeof filing[d] != 'string') {
+            Object.keys(filing[d]).forEach(key => {
+                if(key != 'xmlns') filingMeta[`${d}${key.replace(d, '')}`] = filing[d][key].replace(/(\r\n|\n|\r)/gm," ");
+            })
+        }
+        else {
+            filingMeta[d] = filing[d]
+        }
+    });
+    
+    // If source file is provided and the filing meta is not empty, add in the source file
+    if(source_file && filingMeta) filingMeta['source_file'] = source_file;
+
+    return filingMeta
+}
+
+async function mapFilingContributions(filing, source_file) {
+    // Take a filing and spit out arrays for contributions and filing metadata
+    let filingContributions = []
+
+    if(filing.hasOwnProperty('Contributions')){
+        let rawContributions = filing['Contributions'].Contribution;
+        let contributions = Array.isArray(rawContributions) ? rawContributions : [rawContributions];
+        filingContributions = filingContributions.concat(contributions);
+
+        filingContributions.map(d => {
+            d['FilingID'] = filing['ID'];
+            // If source file is provided and the contributions exist, add in the source file
+            if(source_file) d['source_file'] = source_file;
+            d['Comments'] = d['Comments'] || '';
+            delete d['xmlns'];
+            return d
+        });
+    }
+
+    return filingContributions
+}
+
 async function convert(file){
     return new Promise(async (resolve, reject) => {
         let xml = await fs.readFileSync(file);
@@ -97,5 +141,7 @@ module.exports = {
         saveState: saveState,
         needUpdates: needUpdates,
         download: download,
-        unzip: unzip
+        unzip: unzip,
+        mapFilingMeta: mapFilingMeta,
+        mapFilingContributions: mapFilingContributions
 }

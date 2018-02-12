@@ -6,12 +6,15 @@ needUpdates=$(node index.js)
 mkdir -p downloads/
 mkdir -p extracted/
 mkdir -p parsed/
+rm -rf parsed/*
 
-for sourceFile in $needUpdates; do
+process_quarter() {
+    sourceFile=$1
+
     echo "Processing: $sourceFile"
 
     echo "Downloading: $sourceFile"
-	wget http://soprweb.senate.gov/downloads/$sourceFile -O downloads/$sourceFile
+    wget -q http://soprweb.senate.gov/downloads/$sourceFile -O downloads/$sourceFile
 
     echo "Extracting: $sourceFile"
     unzip -o downloads/$sourceFile -d extracted/${sourceFile%%.*}
@@ -25,21 +28,31 @@ for sourceFile in $needUpdates; do
     done
 
     echo "Finished Processing: $sourceFile"
-done
+}
+
+export -f process_quarter
+
+# Download, Extract and Process files in parallel.
+parallel -j 6 process_quarter ::: $needUpdates
 
 echo "Generating Bulk Files - This may take a while."
-mkdir -p dist/
-rm dist/all_contributions.csv dist/all_meta_combined.json dist/all_meta.csv
+rm -rf dist/all_*
 
-echo "Merging $(ls ./parsed/**/*_contributions.csv | wc -l) contributions files into all_contributions.csv"
-csvstack --quoting 1 --filenames ./parsed/**/*_contributions.csv > dist/all_contributions.csv
-
-echo "Merging $(ls ./parsed/**/*_meta.csv | wc -l) metadata files into all_meta.csv"
-for subXMLFile in ./parsed/**/*_meta.csv; do
-    csvjson --stream $subXMLFile >> dist/all_meta_combined.json
+echo "Merging $(ls ./parsed/**/*_contributions.json | wc -l) contributions files."
+for subXMLFile in ./parsed/**/*_contributions.json; do
+    cat $subXMLFile >> dist/all_contributions_combined.json
 done
 
-in2csv --format ndjson dist/all_meta_combined.json >> dist/all_meta.csv
+echo "Merging $(ls ./parsed/**/*_meta.json | wc -l) metadata files."
+for subXMLFile in ./parsed/**/*_meta.json; do
+    cat $subXMLFile >> dist/all_meta_combined.json
+done
+
+echo "Converting all_contributions_combined.json into all_contributions.csv"
+ndjson-to-csv dist/all_contributions_combined.json > dist/all_contributions.csv
+
+echo "Converting all_meta_combined.json into all_meta.csv"
+ndjson-to-csv dist/all_meta_combined.json > dist/all_meta.csv
 
 echo "All done, generated the following files:"
 du -sh dist/*

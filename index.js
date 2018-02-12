@@ -1,4 +1,3 @@
-const stateLocation = require('./state.json');
 const downloadDir = './downloads';
 const extractDir = './extracted';
 

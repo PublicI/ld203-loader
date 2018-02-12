@@ -1,0 +1,3 @@
+\copy ld203_filings(filing_id, year, received, amount, type, period, registrant_id, registrant_name, registrant_address, registrant_country, lobbyist_name, source_file, comments) FROM 'dist/all_meta.csv' WITH (FORMAT CSV, HEADER ON)
+
+\copy ld203_contributions(contributor, contribution_type, payee, honoree, amount, contribution_date, filing_id, source_file, comments) FROM 'dist/all_contributions.csv' WITH (FORMAT CSV, HEADER ON)

@@ -3,6 +3,7 @@ const xml2js = require('xml2js');
 const argv = require('yargs').argv
 const path = require('path');
 const Papa = require('papaparse');
+const senate = require('./senate');
 
 function stringifyCSV(rows){
     return new Promise(function(complete, error) {
@@ -26,51 +27,7 @@ function parseXML(file) {
     });
 }
 
-async function mapFilingMeta(filing) {
-    let filingMeta = {};
-    Object.keys(filing).filter(d => !['Contributions','xmlns'].includes(d)).forEach(d => {
-        if (typeof filing[d] != 'string') {
-            Object.keys(filing[d]).forEach(key => {
-                if(key != 'xmlns') filingMeta[`${d}${key.replace(d, '')}`] = filing[d][key].replace(/(\r\n|\n|\r)/gm," ");
-            })
-        }
-        else {
-            filingMeta[d] = filing[d]
-        }
-    })
-
-    return filingMeta
-}
-
-async function mapFilingContributions(filing) {
-    // Take a filing and spit out arrays for contributions and filing metadata
-    let filingContributions = []
-
-    if(filing.hasOwnProperty('Contributions')){
-        let rawContributions = filing['Contributions'].Contribution;
-        let contributions = Array.isArray(rawContributions) ? rawContributions : [rawContributions];
-        filingContributions = filingContributions.concat(contributions);
-
-        filingContributions.map(d => {
-            d['FilingID'] = filing['ID'];
-            delete d['xmlns'];
-            return d
-        });
-    }
-
-    return filingContributions
-}
-
-async function main(){
-    let fileToParse = argv.input;
-    let folderToWrite = argv.output;
-    let outputPrefix = path.basename(fileToParse, '.xml');
-    
-    let parsedXML = await parseXML(fileToParse)
-    
-    let parsedFilingMeta = await Promise.all(parsedXML.Filing.map(k => mapFilingMeta(k)))
-    let parsedFilingContributions = await Promise.all(parsedXML.Filing.map(k => mapFilingContributions(k)))
-
+async function writeCSVs(parsedFilingMeta, parsedFilingContributions, folderToWrite, outputPrefix){
     let filingMetaCSV = Papa.unparse([].concat.apply([], parsedFilingMeta), {
         newline: '\n',
         quotes: true
@@ -80,8 +37,21 @@ async function main(){
 
     fs.writeFileSync(`${folderToWrite}/${outputPrefix}_meta.csv`, filingMetaCSV)
     fs.writeFileSync(`${folderToWrite}/${outputPrefix}_contributions.csv`, filingContributionsCSV)
+}
+
+async function main(){
+    let fileToParse = argv.input;
+    let folderToWrite = argv.output;
+    let outputPrefix = path.basename(fileToParse, '.xml');
     
-    fs.writeFileSync(`${folderToWrite}/${outputPrefix}_contributions.json`, parsedFilingMeta.map(d => JSON.stringify(d)).join('\n') + '\n')
+    let parsedXML = await parseXML(fileToParse)
+    
+    let parsedFilingMeta = await Promise.all(parsedXML.Filing.map(k => senate.mapFilingMeta(k, fileToParse)));
+    let parsedFilingContributions = await Promise.all(parsedXML.Filing.map(k => senate.mapFilingContributions(k, fileToParse)));
+    
+    parsedFilingContributions = [].concat.apply([], parsedFilingContributions);//parsedFilingContributions.filter(d => d && d.length > 0);
+    
+    fs.writeFileSync(`${folderToWrite}/${outputPrefix}_contributions.json`, parsedFilingContributions.map(d => JSON.stringify(d)).join('\n') + '\n')
     fs.writeFileSync(`${folderToWrite}/${outputPrefix}_meta.json`, parsedFilingMeta.map(d => JSON.stringify(d)).join('\n') + '\n')
 }
 
