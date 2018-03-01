@@ -6,3 +6,4 @@ parsed/
 dist/
 .DS_Store
 pw
+.vscode

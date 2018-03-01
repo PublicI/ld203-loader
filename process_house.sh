@@ -1,9 +1,8 @@
+mkdir -p downloads/house
+node lib/index.js download house --downloadDir=./downloads/house
+
 mkdir -p extracted/house
-#find ./downloads/house -type f -name *.zip -mindepth 1 | while read zipFile
-#do
-#    outputDir=$(basename "$zipFile" .zip)
-#    unzip -q -o $zipFile -d extracted/house/$outputDir
-#done
+node lib/index.js extract --inputDir=./downloads/house/ --outputDir=./extracted/house/
 
 find ./extracted/house -type d -mindepth 1 | while read f
 do
