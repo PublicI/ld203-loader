@@ -1,4 +1,4 @@
-# LD-203 (Senate) Importer
+# LD-203 (Senate & House) Importer
 
 This script imports the LD-203 bulk downloads from the U.S. Senate [available here](https://www.senate.gov/legislative/Public_Disclosure/contributions_download.htm).
 
