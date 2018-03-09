@@ -21,6 +21,7 @@
     "ndjson-to-csv": "^1.1.0",
     "node-table-to-csv": "^0.1.0",
     "papaparse": "^4.3.6",
+    "progress": "^2.0.0",
     "x-ray": "git+https://github.com/matthewmueller/x-ray.git",
     "x-ray-http-cache": "^2.0.0",
     "xml2js": "^0.4.19",
