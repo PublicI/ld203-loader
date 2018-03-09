@@ -17,6 +17,7 @@
     "fs-extra": "^5.0.0",
     "graceful-fs": "^4.1.11",
     "html-to-xlsx": "^0.6.8",
+    "klaw": "^2.1.1",
     "ndjson-to-csv": "^1.1.0",
     "node-table-to-csv": "^0.1.0",
     "papaparse": "^4.3.6",
