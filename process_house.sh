@@ -1,6 +1,6 @@
 echo "Downloading house disclosure files."
-#mkdir -p downloads/house
-#node lib/index.js download house --downloadDir=./downloads/house
+mkdir -p downloads/house
+node lib/index.js download house --downloadDir=./downloads/house
 
 echo "Extracting downloaded disclosures."
 mkdir -p extracted/house
